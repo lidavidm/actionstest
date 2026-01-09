@@ -52,7 +52,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo repository=$(gh pr --repo ${{ github.repository }} view ${{ inputs.pr }} --json headRepository,headRepositoryOwner --jq '"\\\\(.headRepositoryOwner.login)/\\\\(.headRepository.name)"') | tee -a $GITHUB_OUTPUT
+          echo repository=$(gh pr --repo ${{ github.repository }} view ${{ inputs.pr }} --json headRepository,headRepositoryOwner --jq '"\\(.headRepositoryOwner.login)/\\(.headRepository.name)"') | tee -a $GITHUB_OUTPUT
 
       - name: set job summary
         run: |
