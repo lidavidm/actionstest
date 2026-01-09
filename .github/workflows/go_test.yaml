@@ -89,4 +89,6 @@ jobs:
       - run: |
           git rev-parse HEAD
 
+          echo ${{ github.event_name }}
+
           [[ -f success.txt ]]
