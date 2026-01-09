@@ -61,6 +61,11 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: set job summary
+        run: |
+          echo "**PR:** https://github.com/${{ github.repository }}/pull/${{ inputs.pr }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Remote:** ${{ inputs.repository }}/${{ inputs.commit }}" >> $GITHUB_STEP_SUMMARY
+
       - id: get_run
         env:
           GH_TOKEN: ${{ github.token }}
