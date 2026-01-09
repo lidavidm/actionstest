@@ -85,8 +85,14 @@ jobs:
           echo Passed: ${{ needs.test.result }}
           gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json url
           echo workflow_run_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json url --jq '.url') | tee -a $GITHUB_OUTPUT
+          if [[ '${{ needs.test.result }}' == 'success' ]]; then
+            echo message=":heavy_check_mark: Test passed: " | tee -a $GITHUB_OUTPUT
+          else
+            echo message=":x: Test failed: " | tee -a $GITHUB_OUTPUT
+          fi
 
       - uses: actions/github-script@v7
+        if: needs.test.result == 'success'
         with:
           github-token: ${{ github.token }}
           script: |
@@ -94,5 +100,5 @@ jobs:
               issue_number: ${{ inputs.pr }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Tested ${{ needs.setup.outputs.repository }}@${{ inputs.commit }}: ${{ needs.test.result }}\nWorkflow run: ${{ steps.get_run.outputs.workflow_run_url }}'
+              body: '${{ steps.get_run.outputs.message }}: ${{ needs.setup.outputs.repository }}@${{ inputs.commit }}\nWorkflow run: ${{ steps.get_run.outputs.workflow_run_url }}'
             })
