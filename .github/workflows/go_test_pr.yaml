@@ -82,5 +82,5 @@ jobs:
               issue_number: ${{ inputs.pr }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Tested ${{ inputs.repository }}@${{ inputs.commit }}: ${{ needs.test.result }}\nWorkflow run: ${{ steps.get_run.workflow_run_url }}'
+              body: 'Tested ${{ inputs.repository }}@${{ inputs.commit }}: ${{ needs.test.result }}\nWorkflow run: ${{ steps.get_run.outputs.workflow_run_url }}'
             })
