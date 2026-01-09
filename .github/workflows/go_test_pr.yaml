@@ -24,10 +24,6 @@ on:
         description: "The PR to comment on"
         required: true
         type: string
-      repository:
-        description: "The repository to checkout"
-        required: true
-        type: string
       commit:
         description: "The commit to checkout"
         required: true
@@ -45,10 +41,28 @@ permissions:
   contents: read
 
 jobs:
+  setup:
+    name: configure job
+    runs-on: ubuntu-slim
+    output:
+      repository: ${{ steps.get_repo.outputs.repository }}
+    steps:
+      - name: get repository
+        id: get_repo
+        run: |
+          echo repository=$(gh pr --repo ${{ github.repository }} view ${{ inputs.pr }} --json headRepository,headRepositoryOwner --jq '"\\\\(.headRepositoryOwner.login)/\\\\(.headRepository.name)"') | tee -a $GITHUB_OUTPUT
+
+      - name: set job summary
+        run: |
+          echo "**PR:** https://github.com/${{ github.repository }}/pull/${{ inputs.pr }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Remote:** ${{ steps.get_repo.outputs.repository }}/${{ inputs.commit }}" >> $GITHUB_STEP_SUMMARY
+
   test:
     uses: lidavidm/actionstest/.github/workflows/go_test.yaml@main
+    needs:
+      - setup
     with:
-      repository: ${{ inputs.repository }}
+      repository: ${{ needs.setup.outputs.repository }}
       commit: ${{ inputs.commit }}
 
   report:
@@ -56,16 +70,12 @@ jobs:
     runs-on: ubuntu-slim
     if: ${{ always() }}
     needs:
+      - setup
       - test
     permissions:
       pull-requests: write
 
     steps:
-      - name: set job summary
-        run: |
-          echo "**PR:** https://github.com/${{ github.repository }}/pull/${{ inputs.pr }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Remote:** ${{ inputs.repository }}/${{ inputs.commit }}" >> $GITHUB_STEP_SUMMARY
-
       - id: get_run
         env:
           GH_TOKEN: ${{ github.token }}
@@ -82,5 +92,5 @@ jobs:
               issue_number: ${{ inputs.pr }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Tested ${{ inputs.repository }}@${{ inputs.commit }}: ${{ needs.test.result }}\nWorkflow run: ${{ steps.get_run.outputs.workflow_run_url }}'
+              body: 'Tested ${{ needs.setup.outputs.repository }}@${{ inputs.commit }}: ${{ needs.test.result }}\nWorkflow run: ${{ steps.get_run.outputs.workflow_run_url }}'
             })
