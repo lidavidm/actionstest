@@ -1,0 +1,92 @@
+# Copyright (c) 2025 ADBC Drivers Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# !!!! AUTO-GENERATED FILE.  DO NOT EDIT. !!!!
+# USE adbc-gen-workflow (see adbc-drivers/dev) TO UPDATE THIS FILE.
+
+# This is a common workflow for building & testing Go drivers:
+#
+# - Build the driver
+# - Start dependencies
+# - Run tests
+# - Build the shared library
+
+name: Go Test
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "go/**"
+      - .github/workflows/go_test.yaml
+
+  push:
+    branches:
+      - main
+    paths:
+      - "go/**"
+      - .github/workflows/go_test.yaml
+
+  workflow_call:
+    inputs:
+      repository:
+        description: "The repository to checkout"
+        required: true
+        type: string
+      commit:
+        description: "The commit to checkout"
+        required: true
+        type: string
+
+concurrency:
+  # Must share concurrency group with release workflow since it also builds/tests
+  group: ${{ github.repository }}-${{ github.ref }}-ci
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: "Test/${{ matrix.platform }}_${{ matrix.arch }}"
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { platform: linux, arch: amd64, runner: ubuntu-slim }
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+        if: github.event_name != "workflow_call"
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "checkout remote"
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+        if: github.event_name == "workflow_call"
+        with:
+          repository: ${{ inputs.repository }}
+          ref: ${{ inputs.commit }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - run: |
+          git rev-parse HEAD
+
+          [[ -f success.txt ]]
