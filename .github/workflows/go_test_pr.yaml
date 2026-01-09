@@ -71,7 +71,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo Passed: ${{ needs.test.result }}
-          echo workflow_run_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json url) >> $GITHUB_OUTPUT
+          gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json url
+          echo workflow_run_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json url --jq '.url') | tee -a $GITHUB_OUTPUT
 
       - uses: actions/github-script@v7
         with:
