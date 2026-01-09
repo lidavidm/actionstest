@@ -30,7 +30,7 @@ on:
         type: string
 
 concurrency:
-  group: ${{ github.repository }}-${{ github.ref }}-${{ github.workflow }}
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ inputs.pr }}
   cancel-in-progress: true
 
 defaults:
@@ -52,7 +52,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo repository=$(gh pr --repo ${{ github.repository }} view ${{ inputs.pr }} --json headRepository,headRepositoryOwner --jq '"\\(.headRepositoryOwner.login)/\\(.headRepository.name)"') | tee -a $GITHUB_OUTPUT
+          echo repository=$(gh pr --repo ${{ github.repository }} view ${{ inputs.pr }} --json headRepository,headRepositoryOwner --jq '"\(.headRepositoryOwner.login)/\(.headRepository.name)"') | tee -a $GITHUB_OUTPUT
 
       - name: set job summary
         run: |
@@ -92,7 +92,6 @@ jobs:
           fi
 
       - uses: actions/github-script@v7
-        if: needs.test.result == 'success'
         with:
           github-token: ${{ github.token }}
           script: |
