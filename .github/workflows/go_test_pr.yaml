@@ -66,9 +66,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo Passed: ${{ needs.test.result }}
-          echo gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "test") | .url'
-          gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "test") | .url'
-          echo workflow_run_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "test") | .url') >> $GITHUB_OUTPUT
+          echo workflow_run_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json url) >> $GITHUB_OUTPUT
 
       - uses: actions/github-script@v7
         with:
@@ -78,5 +76,5 @@ jobs:
               issue_number: ${{ inputs.pr }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Go tests completed: ${{ needs.test.result }}\nWorkflow run: ${{ steps.get_run.workflow_run_url }}'
+              body: 'Tested ${{ inputs.repository }}@${{ inputs.commit }}: ${{ needs.test.result }}\nWorkflow run: ${{ steps.get_run.workflow_run_url }}'
             })
