@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
     inputs:
       pr:
-        description: "The PR to comment on"
+        description: "The PR to test"
         required: true
         type: string
       commit:
@@ -44,7 +44,7 @@ jobs:
   setup:
     name: configure job
     runs-on: ubuntu-slim
-    output:
+    outputs:
       repository: ${{ steps.get_repo.outputs.repository }}
     steps:
       - name: get repository
